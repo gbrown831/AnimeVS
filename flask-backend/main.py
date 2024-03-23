@@ -28,7 +28,8 @@ def getURLNaruto(name): #Works only for Naruto
         #i.e returns image links
         for a_element in a_elements_inside_class:
             if a_element['href'].startswith('http'):
-                url_list.append(a_element['href'])
+                str = a_element['href'][:a_element['href'].rfind('.png')+4]
+                url_list.append(str)
 
     return url_list
 
@@ -53,7 +54,8 @@ def getURL(name): #Works for DragonBall, JJK, and OnePiece
         #i.e returns image links
         for a_element in a_elements_inside_class:
             if a_element['href'].startswith('http'):
-                url_list.append(a_element['href'])
+                str = a_element['href'][:a_element['href'].rfind('.png')+4]
+                url_list.append(str)
     
     return url_list
 
