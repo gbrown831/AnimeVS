@@ -33,23 +33,9 @@ def getURL(name):
 
 class Images(Resource):
     def get(self, name):
-        return {'images': getURL(name.split(' ').join('_'))}
+        return {'images': getURL(name)}
 
-api.add_resource(Images, '/<str:name>')
-
-def scrape():
-    url = "https://naruto.fandom.com/wiki/Naruto_Uzumaki"
-    # r = requests.get(url).content.decode('utf-8')
-    page = urlopen(url)
-    html = page.read().decode("utf-8")
-    soup = BeautifulSoup(html, "html.parser")
-    return soup.text
-
-def get_image():
-    with open("text.txt", "w", encoding="utf-8") as f:
-        f.write(scrape("https://naruto.fandom.com/wiki/Naruto_Uzumaki"))
-
-    # scrape("https://naruto.fandom.com/wiki/Naruto_Uzumaki")
-    
+api.add_resource(Images, '/<name>')
+ 
 if __name__ == '__main__':
     app.run(debug=True)
