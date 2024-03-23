@@ -6,13 +6,15 @@
 <!-- * * * * * * * * * Delete the template below * * * * * * * * * -->
 <!-- * * * * * * * to get started with your project! * * * * * * * -->
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<div id="main">
+  @if (viewHome) {
+    <app-home (setView)="setView($event)"></app-home>
+  } 
+  @if (!viewHome) {
+    <app-battle (setView)="setView($event)"></app-battle>
+  }
+</div>
 
-@if (viewHome) {
-  <app-home (setView)="setView($event)"></app-home>
-} 
-@if (!viewHome) {
-  <app-battle (setView)="setView($event)"></app-battle>
-}
 
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * * The content above * * * * * * * * * * * * -->
