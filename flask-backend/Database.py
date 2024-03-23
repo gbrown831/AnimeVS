@@ -7,46 +7,57 @@ from flask_sqlalchemy import SQLAlchemy
 #for reading the spreadsheet
 import pandas as pd
 
-animeCharacters = pd.read_csv(r'C:\Users\gbrow\python\hoohacks\AnimeVS\AnimeCharacters.csv')
+# create the extension
+db = SQLAlchemy()
+# create the app
+app = Flask(__name__)
+# configure the SQLite database, relative to the app instance folder
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
+# initialize the app with the extension
 
 
-#Create database names sqlitedbs
-engine = create_engine('sqlite:///C:\\sqlitedbs\\database.db')
+animeCharacters = pd.read_csv('./AnimeCharacters.csv')
 
-#declare the base. Not sure if this is needed
+
+# #Create database names sqlitedbs
+# engine = create_engine('sqlite:///C:\\sqlitedbs\\database.db')
+
+# #declare the base. Not sure if this is needed
 Base = declarative_base()
 
 #character table
-class Characters(Base):
+class Character(db.Model):
 
     __tablename__ = 'characters'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(50), unique=True, nullable=False)
-    show = Column(String(50), unique=True, nullable=False)
-    url = Column(String(50), unique=True, nullable=False)
+    id = db.Column(Integer, primary_key=True)
+    name = db.Column(String(50), unique=True, nullable=False)
+    show = db.Column(String(50), unique=True, nullable=False)
+    url = db.Column(String(50), unique=True, nullable=False)
 
 #battle table
-class Battles(Base):
+class Battle(db.Model):
     __tablename__ = 'battles'
-    id = Column(Integer, primary_key=True)
-    char1id = Column(Integer, primary_key=True)
-    char2id = Column(Integer, primary_key=True)
-    votes1 = Column(Integer, primary_key=True)
-    votes2 = Column(Integer, primary_key=True)
+    id = db.Column(Integer, primary_key=True)
+    char1id = db.Column(Integer, primary_key=True)
+    char2id = db.Column(Integer, primary_key=True)
+    votes1 = db.Column(Integer, primary_key=True)
+    votes2 = db.Column(Integer, primary_key=True)
 
-#puts both of the tables into the database
-Base.metadata.create_all(engine)
+# #puts both of the tables into the database
+# Base.metadata.create_all(engine)
 
-#read data from csv file, create character objects, and insert them into the table
-Session = sessionmaker(bind=engine)
-session = Session()
+# #read data from csv file, create character objects, and insert them into the table
+# Session = sessionmaker(bind=engine)
+# session = Session()
 
-for index, row in animeCharacters.iterrows():
-    new_char = Characters(charName = row['name'], charShow = row['show'],charShowURL = row['url'])
-    session.add(new_char)
-    session.commit()
-session.close()
+# for index, row in animeCharacters.iterrows():
+#     new_char = Character(charName = row['name'], charShow = row['show'],charShowURL = row['url'])
+#     session.add(new_char)
+#     session.commit()
+# session.close()
 
+with app.app_context():
+    db.create_all()
 
 
 

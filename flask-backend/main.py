@@ -4,10 +4,24 @@ import requests
 from bs4 import BeautifulSoup
 import sys
 from flask_cors import CORS
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import sessionmaker
+import pandas as pd
+
 
 app = Flask(__name__)
 CORS(app)
 api = Api(app)
+
+# create the extension
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
+db = SQLAlchemy(app)
+# create the app
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
+animeCharacters = pd.read_csv('./AnimeCharacters.csv')
+app.app_context()
+# configure the SQLite database, relative to the app instance f
 
 def getURLNaruto(name): #Works only for Naruto
     url = 'https://naruto.fandom.com/wiki/' + name       #'https://naruto.fandom.com/wiki/Naruto_Uzumaki'
@@ -65,7 +79,42 @@ class Images(Resource):
     def get(self, name):
         return {'images': getURLNaruto(name)}
 
+
+#character table
+class Character(db.Model):
+
+    __tablename__ = 'characters'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    show = db.Column(db.String(50), nullable=False)
+    url = db.Column(db.String(50), nullable=False)
+
+#battle table
+class Battle(db.Model):
+    __tablename__ = 'battles'
+    id = db.Column(db.Integer, primary_key=True)
+    char1id = db.Column(db.Integer, primary_key=True)
+    char2id = db.Column(db.Integer, primary_key=True)
+    votes1 = db.Column(db.Integer, primary_key=True)
+    votes2 = db.Column(db.Integer, primary_key=True)
+
 api.add_resource(Images, '/<name>')
- 
+
+
+# with app.test_request_context():
+#      db.create_all()
+
 if __name__ == '__main__':
     app.run(debug=True)
+    # app.app_context()
+    # Session = sessionmaker(bind=engine)
+    # session = Session()
+
+    # with app.test_request_context():
+    #  db.create_all()
+
+    # with app.app_context():
+    #     for index, row in animeCharacters.iterrows():
+    #         new_char = Character(name = row['name'], show = row['show'], url = row['url'])
+    #         db.session.add(new_char)
+    #         db.session.commit()
