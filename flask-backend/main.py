@@ -27,7 +27,8 @@ def getURL(name):
         # Print the href attribute of each <a> element found
         for a_element in a_elements_inside_class:
             if a_element['href'].startswith('http'):
-                url_list.append(a_element['href'])
+                str = a_element['href'][:a_element['href'].rfind('.png')+4]
+                url_list.append(str)
 
     return url_list
 
