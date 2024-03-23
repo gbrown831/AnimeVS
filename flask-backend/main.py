@@ -7,8 +7,8 @@ import sys
 app = Flask(__name__)
 api = Api(app)
 
-def getURL(url):
-    url = url       #'https://naruto.fandom.com/wiki/Naruto_Uzumaki'
+def getURL(name):
+    url = 'https://naruto.fandom.com/wiki/' + name       #'https://naruto.fandom.com/wiki/Naruto_Uzumaki'
 
     url_list = []
     response = requests.get(url)
@@ -29,13 +29,13 @@ def getURL(url):
             if a_element['href'].startswith('http'):
                 url_list.append(a_element['href'])
 
-    return {"images": url_list}
+    return url_list
 
-class HelloWorld(Resource):
-    def get(self):
-        return {'hello': 'world'}
+class Images(Resource):
+    def get(self, name):
+        return {'images': getURL(name.split(' ').join('_'))}
 
-api.add_resource(HelloWorld, '/')
+api.add_resource(Images, '/<str:name>')
 
 if __name__ == '__main__':
     app.run(debug=True)
