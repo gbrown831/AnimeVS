@@ -66,6 +66,11 @@ export class BattleComponent {
   left_percentage!: string;
   right_percentage!: string;
 
+  /**
+   * Saves the current leaderboard rankings
+   */
+  rankings: any = {};
+
 /**
  * Triggers the app to change the view of the screen
  * @param isHome boolean to decide whether to return to the home screen
@@ -85,7 +90,7 @@ export class BattleComponent {
    * in the Flask database
    */
   getImages() {
-    axios.get('https://anime-versus-a63b2afeb899.herokuapp.com/')
+    axios.get('http://127.0.0.1:5000/')
     .then((res) => {
       console.log(res.data)
       this.leftURL = res.data.char1_url[0]
@@ -93,6 +98,14 @@ export class BattleComponent {
       this.left_char = res.data.char1;
       this.right_char = res.data.char2;
 
+      this.rankings = {
+        "rank1": res.data.rank1,
+        "rank2": res.data.rank2,
+        "rank3": res.data.rank3,
+        "rank4": res.data.rank4,
+        "rank5": res.data.rank5,
+      }
+      
       this.hasVoted = false;
     })
     .catch((err) => console.log(err));
@@ -106,7 +119,7 @@ export class BattleComponent {
   postVotes(id: string | number) {
 
     this.hasVoted = true;
-    axios.post('https://anime-versus-a63b2afeb899.herokuapp.com/', {
+    axios.post('http://127.0.0.1:5000/', {
       "char1_id": this.left_char.id,
       "char2_id": this.right_char.id,
       "winner": id
@@ -119,6 +132,15 @@ export class BattleComponent {
        * So, this tracks whether the order of ID's were swapped
        * within the backend response 
        */
+      console.log(res.data)
+
+      this.rankings = {
+        "rank1": res.data.rank1,
+        "rank2": res.data.rank2,
+        "rank3": res.data.rank3,
+        "rank4": res.data.rank4,
+        "rank5": res.data.rank5,
+      }
 
       if (res.data.switch) {
         this.leftVotes = (res.data.votes2 * 100) / (res.data.votes1 + res.data.votes2);

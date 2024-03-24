@@ -33,6 +33,7 @@ class Character(db.Model, SerializerMixin):
     name = db.Column(db.String(50), unique=True, nullable=False)
     show = db.Column(db.String(50), nullable=False)
     url = db.Column(db.String(50), nullable=False)
+    elo = db.Column(db.Double, nullable = False, unique = False)
 
 #battle table
 class Battle(db.Model, SerializerMixin):
@@ -110,6 +111,32 @@ def getURL(url): #Works for DragonBall, JJK, and OnePiece
     
     return url_list
 
+def rank(winner, loser):
+    '''
+    Updates elos of two characters that battle and updates the database
+    returns a list of top 5 characters names
+    '''
+    #constants and current player ratings
+    k = 30
+    base = 10
+    charw = Character.query.get(winner)
+    charl = Character.query.get(loser)
+    Rw = charw.elo
+    Rl = charl.elo
+
+    #new player rating calculations
+    Pw = (1.0/(1.0 + pow(base,((Rl - Rw)/400))))
+    Pl = (1.0/(1.0 + pow(base,((Rw - Rl)/400))))
+
+    Rwprime = Rw + k*(1-Pw)
+    Rlprime = Rl + k*(0-Pl)
+
+    charw.elo = Rwprime
+    charl.elo = Rlprime
+
+    #orders database by elo
+    return Character.query.order_by(Character.elo)
+
 
 #------------------------------------------------------------ Middleware -------------------------------------------------------------------#
 
@@ -146,13 +173,19 @@ class Images(Resource):
         else:
             char2_url = getURL(char2.url)
 
+        rankings = Character.query.order_by(Character.elo)
         return {
             'test': len(characters.all()),
             'char1': char1.to_dict(),
             'char2': char2.to_dict(),
             'char1_url': char1_url,
             'char2_url': char2_url,
-        }
+            'rank1': rankings[0].name,
+            'rank2': rankings[1].name,
+            'rank3': rankings[2].name,
+            'rank4': rankings[3].name,
+            'rank5': rankings[4].name
+    }
     
     def post(self):
         """
@@ -182,12 +215,19 @@ class Images(Resource):
             battle = Battle.query.filter_by(char1_id = char1num, char2_id = char2num).first()
             if winid == char1num:
                 battle.votes1 = battle.votes1 + 1
+                new_Rankings = rank(char1num, char2num)
             else:
                 battle.votes2 = battle.votes2 + 1
+                new_Rankings = rank(char2num, char1num)
             context = {
                 'votes1': battle.votes1,
                 'votes2': battle.votes2,
-                'switch': switches          
+                'switch': switches,
+                'rank1':new_Rankings[0].name,
+                'rank2':new_Rankings[1].name,
+                'rank3':new_Rankings[2].name,
+                'rank4':new_Rankings[3].name,
+                'rank5':new_Rankings[4].name
             }
 
         except:
@@ -195,16 +235,23 @@ class Images(Resource):
             if winid == char1num:       
                 # new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=1,votes2=0)
                 new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=random.randint(1, 10),votes2=random.randint(0, 10))
+                new_Rankings = rank(char1num, char2num)
             else:
                 # new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=0,votes2=1)
                 new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=random.randint(0, 10),votes2=random.randint(1, 10))
+                new_Rankings = rank(char2num, char1num)
             
             db.session.add(new_battle)
 
             context = {
                 'votes1': new_battle.votes1,
                 'votes2': new_battle.votes2,
-                'switch': switches
+                'switch': switches,
+                'rank1':new_Rankings[0].name,
+                'rank2':new_Rankings[1].name,
+                'rank3':new_Rankings[2].name,
+                'rank4':new_Rankings[3].name,
+                'rank5':new_Rankings[4].name
             }
         
         db.session.commit()
@@ -223,6 +270,6 @@ if __name__ == '__main__':
     ## Used to initiate values in the characters table
     # with app.app_context():
     #     for index, row in animeCharacters.iterrows():
-    #         new_char = Character(name = row['name'], show = row['show'], url = row['url'])
+    #         new_char = Character(name = row['name'], show = row['show'], url = row['url'], elo=1400)
     #         db.session.add(new_char)
     #         db.session.commit()
