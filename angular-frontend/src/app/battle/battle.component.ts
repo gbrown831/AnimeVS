@@ -1,13 +1,14 @@
 import { Component, Output, EventEmitter, OnInit  } from '@angular/core';
 import axios from 'axios';
 import {NgbCollapseModule} from '@ng-bootstrap/ng-bootstrap';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 import {
   trigger,
   state,
   style,
   animate,
   transition,
-  // ...
 } from '@angular/animations';
 
 
@@ -18,12 +19,17 @@ import {
   templateUrl: './battle.component.html',  
   styleUrl: './battle.component.css',
   animations: [
-    state('hasWon', style({
-      opacity: 1,
-    })),
-    state('hasLost', style({
-      opacity: 0.6,
-    })),
+    trigger('fadeImage', [
+      state('hasWon', style({
+        opacity: 1,
+      })),
+      state('hasLost', style({
+        opacity: 0.6,
+      })),
+      transition('hasWon => hasLost', [
+        animate('1s')
+      ]),
+    ])
   ]
 })
 
@@ -37,8 +43,12 @@ export class BattleComponent {
   rightVotes!: string | number;
 
   hasVoted: boolean = false;
+
   left_percentage!: string;
   right_percentage!: string;
+
+  fadeLeft = this.hasVoted && (this.leftVotes < this.rightVotes);
+  fadeRight = this.hasVoted && (this.leftVotes > this.rightVotes);
 
 
   changeView(isHome: boolean) {
@@ -61,11 +71,11 @@ export class BattleComponent {
       this.hasVoted = false;
     })
     .catch((err) => console.log(err));
-
   }
 
 
   postVotes(id: string | number) {
+
     this.hasVoted = true;
     axios.post('http://127.0.0.1:5000/', {
       "char1_id": this.left_char.id,
@@ -81,6 +91,10 @@ export class BattleComponent {
         this.rightVotes = (res.data.votes2 * 100) / (res.data.votes1 + res.data.votes2);
       }
 
+      this.fadeLeft = (this.leftVotes < this.rightVotes);
+      this.fadeRight = (this.leftVotes > this.rightVotes);
+      console.log(this.fadeLeft, this.fadeRight)
+
       this.left_percentage = Math.floor((this.leftVotes / 100) * 80).toString() + 'vw';
       this.right_percentage = Math.floor((this.rightVotes / 100) * 80).toString() + 'vw';
 
@@ -90,7 +104,7 @@ export class BattleComponent {
     .catch((err) => console.log(err));
 
     setTimeout(() => {
-      this.getImages()
+      this.getImages();
     }, 3000);
   }
 }

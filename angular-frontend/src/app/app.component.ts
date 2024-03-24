@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { BattleComponent } from './battle/battle.component';
 
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -18,3 +19,4 @@ export class AppComponent {
     this.viewHome = toHome;
   }
 }
+
