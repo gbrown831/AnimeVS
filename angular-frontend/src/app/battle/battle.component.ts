@@ -1,24 +1,45 @@
 import { Component, Output, EventEmitter, OnInit  } from '@angular/core';
 import axios from 'axios';
+import {NgbCollapseModule} from '@ng-bootstrap/ng-bootstrap';
+import {
+  trigger,
+  state,
+  style,
+  animate,
+  transition,
+  // ...
+} from '@angular/animations';
+
 
 @Component({
   selector: 'app-battle',
   standalone: true,
-  imports: [],
-  templateUrl: './battle.component.html',
-  styleUrl: './battle.component.css'
+  imports: [NgbCollapseModule],
+  templateUrl: './battle.component.html',  
+  styleUrl: './battle.component.css',
+  animations: [
+    state('hasWon', style({
+      opacity: 1,
+    })),
+    state('hasLost', style({
+      opacity: 0.6,
+    })),
+  ]
 })
+
 export class BattleComponent {
   @Output() setView = new EventEmitter<boolean>();
-  leftID!: string;
-  rightID!: string;
   leftURL!: string;
   rightURL!: string;
-
+  left_char: any = {};
+  right_char: any = {};
   leftVotes!: string | number;
   rightVotes!: string | number;
 
   hasVoted: boolean = false;
+  left_percentage!: string;
+  right_percentage!: string;
+
 
   changeView(isHome: boolean) {
     this.setView.emit(isHome);
@@ -32,9 +53,9 @@ export class BattleComponent {
     axios.get('http://127.0.0.1:5000/')
     .then((res) => {
       this.leftURL = res.data.char1_url[0]
-      this.leftID = res.data.char1.id
       this.rightURL = res.data.char2_url[0]
-      this.rightID = res.data.char2.id
+      this.left_char = res.data.char1;
+      this.right_char = res.data.char2;
       console.log(res.data)
 
       this.hasVoted = false;
@@ -47,8 +68,8 @@ export class BattleComponent {
   postVotes(id: string | number) {
     this.hasVoted = true;
     axios.post('http://127.0.0.1:5000/', {
-      "char1_id": this.leftID,
-      "char2_id": this.rightID,
+      "char1_id": this.left_char.id,
+      "char2_id": this.right_char.id,
       "winner": id
     })
     .then((res) => {
@@ -60,9 +81,11 @@ export class BattleComponent {
         this.rightVotes = (res.data.votes2 * 100) / (res.data.votes1 + res.data.votes2);
       }
 
-      this.leftVotes = this.leftVotes + '%'
-      this.rightVotes = this.rightVotes + '%'
-      console.log(res.data)
+      this.left_percentage = Math.floor((this.leftVotes / 100) * 80).toString() + 'vw';
+      this.right_percentage = Math.floor((this.rightVotes / 100) * 80).toString() + 'vw';
+
+      this.leftVotes = Math.floor(this.leftVotes).toString() + '%'
+      this.rightVotes = Math.floor(this.rightVotes).toString() + '%'
     })
     .catch((err) => console.log(err));
 

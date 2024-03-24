@@ -1,24 +1,41 @@
 <div id="battle-container">
     <div id="character-container">
-        <a (click)="postVotes(leftID)"><img id="left-image" [src]="leftURL"></a>
-        <a (click)="postVotes(rightID)"><img id="right-image" [src]="rightURL"></a>
+        <div>
+            <a (click)="postVotes(left_char.id)"><img id="left-image" [src]="leftURL"></a>
+            <div class="character">
+                <h2>{{left_char.name}}</h2>
+                <h4>{{left_char.show}}</h4>
+            </div>
+        </div>
+        <div>
+            <a (click)="postVotes(right_char.id)"><img id="right-image" [src]="rightURL"></a>
+            <div class="character">
+                <h2>{{right_char.name}}</h2>
+                <h4>{{right_char.show}}</h4>
+            </div>
+        </div>
     </div>
     
-    <div>
+    <!-- <div id="character-descriptions">
         <div class="character">
+            <h2>{{left_char.name}}</h2>
+            <h4>{{left_char.show}}</h4>
         </div>
-        <div class="character"></div>
+        <div class="character">
+            <h2>{{right_char.name}}</h2>
+            <h4>{{right_char.show}}</h4>
+        </div>
+    </div> -->
 
-    </div>
-
-    @if (hasVoted) {
+    <div #collapse="ngbCollapse" [(ngbCollapse)]="!hasVoted">
         <div id="votes">
             <div id="number-left">{{leftVotes}}</div>
-            <div id="votes-left"></div>
-            <div id="votes-right"></div>
+            <div id="votes-left" [style.width]="left_percentage"></div>
+            <div id="votes-right" [style.width]="right_percentage"></div>
             <div id="number-right">{{rightVotes}}</div>
         </div>
-    }
+    </div>
+
 
     <button id="return" (click)="changeView(true)">Return</button>
 </div>

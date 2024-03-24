@@ -108,7 +108,6 @@ class Images(Resource):
         while rand1 == rand2:
             rand1 = random.randint(1, num_characters-1)
             rand2 = random.randint(1, num_characters-1)
-        print(rand1, rand2)
         char1 = Character.query.get(rand1)
         char2 = Character.query.get(rand2)
         
@@ -137,7 +136,6 @@ class Images(Resource):
         #if it is there, increment the winners vote count
         #return voter counts
         data = request.json
-        print(data)
         char1num = data['char1_id']
         char2num = data['char2_id']
         winid = data['winner']
@@ -149,16 +147,12 @@ class Images(Resource):
             char1num = foo
             switches = True
         try:
-            print('test!!!', char1num, char2num)
             battle = Battle.query.filter_by(char1_id = char1num, char2_id = char2num).first()
             print('test', winid)
             if winid == char1num:
-                print('increment first', battle)       
                 battle.votes1 = battle.votes1 + 1
             else:
-                print('increment second')
                 battle.votes2 = battle.votes2 + 1
-            print(battle.votes1, battle.votes2)
             context = {
                 'votes1': battle.votes1,
                 'votes2': battle.votes2,

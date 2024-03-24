@@ -14,8 +14,8 @@
 }
 
 img {
-    width: 35vw;
-    height: 35vw;
+    width: 25vw;
+    height: 25vw;
 }
 
 #return {
@@ -66,4 +66,27 @@ img {
 
 #number-right {
     margin-left: 5px
+}
+
+#character-descriptions {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+}
+
+.character {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+h2 {
+    margin-bottom: 1px;
+}
+
+h4 {
+    margin: 2px
 }
