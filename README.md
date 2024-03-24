@@ -22,6 +22,11 @@ this is a percentile that is telling you which side is winning
   - PostgreSQL
 
 
+## Names
+- Kwaku Ofosu-Tuffour
+- Gus Brown
+- Alan Gonzalez
+- Alexander Bendezu
 
 
 
