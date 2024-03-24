@@ -8,6 +8,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
+import random
+from sqlalchemy_serializer import SerializerMixin
+
 
 
 app = Flask(__name__)
@@ -49,8 +52,7 @@ def getURLNaruto(name): #Works only for Naruto
 
     return url_list
 
-def getURL(name): #Works for DragonBall, JJK, and OnePiece
-    url = 'https://dragonball.fandom.com/wiki/Vegeta' + name
+def getURL(name, url): #Works for DragonBall, JJK, and OnePiece
 
     url_list = []
 
@@ -76,41 +78,59 @@ def getURL(name): #Works for DragonBall, JJK, and OnePiece
     return url_list
 
 class Images(Resource):
-    def get(self, name):
+    def get(self):
         #generates new random IDs
         characters = db.session.execute(db.select(Character))
         num_characters = len(characters.all())
         #generate two random numbers from 0 to num_characters
         #char1 = query where character ID is random number 1
         #char2 = query where character ID is random number 2
+        rand1 = -1
+        rand2 = -1
+        while rand1 == rand2:
+            rand1 = random.randint(0, num_characters)
+            rand2 = random.randint(0, num_characters)
+
+        char1 = Character.query.get(rand1)
+        char2 = Character.query.get(rand2)
+        
+        if char1.show == "Naruto":
+            char1_url = getURLNaruto(char1.show)
+        else:
+            char1_url = getURL(char1.show, char1.url)
+        
+        if char2.show == "Naruto":
+            char2_url = getURLNaruto(char2.show)
+        else:
+            char2_url = getURL(char2.show, char2.url)
 
         return {
-            'images': getURLNaruto(name),
-            'test': len(characters.all())
-            #char1: char1
-            #char2: char2
+            'test': len(characters.all()),
+            'char1': char1.to_dict(),
+            'char2': char2.to_dict(),
+            'char1_url': char1_url,
+            'char2_url': char2_url,
         }
     
 
 #character table
-class Character(db.Model):
+class Character(db.Model, SerializerMixin):
 
-    __tablename__ = 'characters'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
     show = db.Column(db.String(50), nullable=False)
     url = db.Column(db.String(50), nullable=False)
 
 #battle table
-class Battle(db.Model):
-    __tablename__ = 'battles'
+class Battle(db.Model, SerializerMixin):
+
     id = db.Column(db.Integer, primary_key=True)
     char1id = db.Column(db.Integer, primary_key=True)
     char2id = db.Column(db.Integer, primary_key=True)
     votes1 = db.Column(db.Integer, primary_key=True)
     votes2 = db.Column(db.Integer, primary_key=True)
 
-api.add_resource(Images, '/<name>')
+api.add_resource(Images, '/')
 
 
 # with app.test_request_context():
