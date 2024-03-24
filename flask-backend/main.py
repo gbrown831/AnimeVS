@@ -77,8 +77,20 @@ def getURL(name): #Works for DragonBall, JJK, and OnePiece
 
 class Images(Resource):
     def get(self, name):
-        return {'images': getURLNaruto(name)}
+        #generates new random IDs
+        characters = db.session.execute(db.select(Character))
+        num_characters = len(characters.all())
+        #generate two random numbers from 0 to num_characters
+        #char1 = query where character ID is random number 1
+        #char2 = query where character ID is random number 2
 
+        return {
+            'images': getURLNaruto(name),
+            'test': len(characters.all())
+            #char1: char1
+            #char2: char2
+        }
+    
 
 #character table
 class Character(db.Model):

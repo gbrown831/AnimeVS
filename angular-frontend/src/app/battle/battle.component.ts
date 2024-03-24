@@ -29,6 +29,7 @@ export class BattleComponent {
     axios.get('http://127.0.0.1:5000/Naruto_Uzumaki')
     .then((res) => {
       this.leftURL = res.data.images[0]
+      console.log(res.data)
     })
     .catch((err) => console.log(err));
     axios.get('http://127.0.0.1:5000/Sasuke_Uchiha')
