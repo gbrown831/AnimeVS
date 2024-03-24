@@ -3,6 +3,13 @@
         <a (click)="postVotes(leftID)"><img id="left-image" [src]="leftURL"></a>
         <a (click)="postVotes(rightID)"><img id="right-image" [src]="rightURL"></a>
     </div>
+    
+    <div>
+        <div class="character">
+        </div>
+        <div class="character"></div>
+
+    </div>
 
     @if (hasVoted) {
         <div id="votes">

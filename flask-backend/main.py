@@ -106,9 +106,9 @@ class Images(Resource):
         rand1 = -1
         rand2 = -1
         while rand1 == rand2:
-            rand1 = random.randint(0, num_characters)
-            rand2 = random.randint(0, num_characters)
-
+            rand1 = random.randint(1, num_characters-1)
+            rand2 = random.randint(1, num_characters-1)
+        print(rand1, rand2)
         char1 = Character.query.get(rand1)
         char2 = Character.query.get(rand2)
         
@@ -148,30 +148,42 @@ class Images(Resource):
             char2num = char1num
             char1num = foo
             switches = True
-        print(char1num, char2num, 'test')
         try:
-            battle = Battle.query.filer_by(char1_id = char1num, char2_id = char2num)
-            if winid == char1num:       
-                battle.voter1 = battle.voter1 + 1
+            print('test!!!', char1num, char2num)
+            battle = Battle.query.filter_by(char1_id = char1num, char2_id = char2num).first()
+            print('test', winid)
+            if winid == char1num:
+                print('increment first', battle)       
+                battle.votes1 = battle.votes1 + 1
             else:
-                battle.voter2 = battle.voter2 + 1
+                print('increment second')
+                battle.votes2 = battle.votes2 + 1
+            print(battle.votes1, battle.votes2)
+            context = {
+                'votes1': battle.votes1,
+                'votes2': battle.votes2,
+                'switch': switches          
+            }
+
 
         except:
             battles = db.session.execute(db.select(Battle))
             if winid == char1num:       
                 new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=1,votes2=0)
-                print(new_battle.id)
             else:
                 new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=0,votes2=1)
             
             db.session.add(new_battle)
-            db.session.commit()
-    
-        return {
-            'votes1': new_battle.votes1,
-            'votes2': new_battle.votes2,
-            'switch': switches
-        }
+
+            context = {
+                'votes1': new_battle.votes1,
+                'votes2': new_battle.votes2,
+                'switch': switches
+            }
+        
+        db.session.commit()
+
+        return context
     
 api.add_resource(Images, '/')
 
