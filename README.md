@@ -25,7 +25,7 @@ this is a percentile that is telling you which side is winning
 ## Names
 - Kwaku Ofosu-Tuffour
 - Gus Brown
-- Alan Gonzalez
+- Alan Gonzalez Osorio
 - Alexander Bendezu
 
 
