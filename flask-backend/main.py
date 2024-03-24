@@ -1,4 +1,6 @@
 from flask import Flask, request
+from flask_restful import Resource, Api
+from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
 import requests
 from bs4 import BeautifulSoup
