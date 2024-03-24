@@ -1,1 +1,0 @@
-web: gunicorn -w 4 --chdir ./flask-backend wsgi:app
