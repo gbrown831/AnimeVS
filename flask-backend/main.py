@@ -1,5 +1,5 @@
-from flask import Flask
-from flask_restful import Resource, Api
+from flask import Flask, request
+from flask_restful import Resource, Api, reqparse
 import requests
 from bs4 import BeautifulSoup
 import sys
@@ -26,8 +26,24 @@ animeCharacters = pd.read_csv('./AnimeCharacters.csv')
 app.app_context()
 # configure the SQLite database, relative to the app instance f
 
-def getURLNaruto(name): #Works only for Naruto
-    url = 'https://naruto.fandom.com/wiki/' + name       #'https://naruto.fandom.com/wiki/Naruto_Uzumaki'
+#character table
+class Character(db.Model, SerializerMixin):
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)
+    show = db.Column(db.String(50), nullable=False)
+    url = db.Column(db.String(50), nullable=False)
+
+#battle table
+class Battle(db.Model, SerializerMixin):
+
+    id = db.Column(db.Integer, primary_key=True)
+    char1_id = db.Column(db.Integer, primary_key=True)
+    char2_id = db.Column(db.Integer, primary_key=True)
+    votes1 = db.Column(db.Integer, primary_key=True)
+    votes2 = db.Column(db.Integer, primary_key=True)
+
+def getURLNaruto(url): #Works only for Naruto
 
     url_list = []
     response = requests.get(url)
@@ -95,12 +111,12 @@ class Images(Resource):
         char2 = Character.query.get(rand2)
         
         if char1.show == "Naruto":
-            char1_url = getURLNaruto(char1.show)
+            char1_url = getURLNaruto(char1.url)
         else:
             char1_url = getURL(char1.show, char1.url)
         
         if char2.show == "Naruto":
-            char2_url = getURLNaruto(char2.show)
+            char2_url = getURLNaruto(char2.url)
         else:
             char2_url = getURL(char2.show, char2.url)
 
@@ -112,24 +128,49 @@ class Images(Resource):
             'char2_url': char2_url,
         }
     
+    def post(self):
+        #if char2id < char1id, char1id is char2id and char2id is char1id
+        #for query for battle in database with the characters
+        #if it is not there, make a battle and set the winners vote count to one
+        #if it is there, increment the winners vote count
+        #return voter counts
+        data = request.json
+        print(data)
+        char1num = data['char1_id']
+        char2num = data['char2_id']
+        winid = data['winner']
+        switches = False
+        
+        if char2num < char1num:
+            foo = char2num
+            char2num = char1num
+            char1num = foo
+            switches = True
+        print(char1num, char2num, 'test')
+        try:
+            battle = Battle.query.filer_by(char1_id = char1num, char2_id = char2num)
+            if winid == char1num:       
+                battle.voter1 = battle.voter1 + 1
+            else:
+                battle.voter2 = battle.voter2 + 1
 
-#character table
-class Character(db.Model, SerializerMixin):
-
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), unique=True, nullable=False)
-    show = db.Column(db.String(50), nullable=False)
-    url = db.Column(db.String(50), nullable=False)
-
-#battle table
-class Battle(db.Model, SerializerMixin):
-
-    id = db.Column(db.Integer, primary_key=True)
-    char1id = db.Column(db.Integer, primary_key=True)
-    char2id = db.Column(db.Integer, primary_key=True)
-    votes1 = db.Column(db.Integer, primary_key=True)
-    votes2 = db.Column(db.Integer, primary_key=True)
-
+        except:
+            battles = db.session.execute(db.select(Battle))
+            if winid == char1num:       
+                new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=1,votes2=0)
+                print(new_battle.id)
+            else:
+                new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=0,votes2=1)
+            
+            db.session.add(new_battle)
+            db.session.commit()
+    
+        return {
+            'votes1': new_battle.votes1,
+            'votes2': new_battle.votes2,
+            'switch': switches
+        }
+    
 api.add_resource(Images, '/')
 
 
