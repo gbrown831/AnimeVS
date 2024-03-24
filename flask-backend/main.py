@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Resource, Api
 import requests
 from bs4 import BeautifulSoup
@@ -111,6 +111,39 @@ class Images(Resource):
             'char1_url': char1_url,
             'char2_url': char2_url,
         }
+    def post(self):
+        #if char2id < char1id, char1id is char2id and char2id is char1id
+        #for query for battle in database with the characters
+        #if it is not there, make a battle and set the winners vote count to one
+        #if it is there, increment the winners vote count
+        #return voter counts
+        data = request.json
+        char1num = data['char1id']
+        char2num = data['char2id']
+        winid = data['winner']
+        
+        if(char2num < char1num):
+            foo = char2num
+            char2num = char1num
+            char1num = foo
+        try:
+            battle = Battle.query.filer_by(char1id = char1num, char2id = char2num)
+            if(winid = char1num):       
+                battle.voter1 = battle.voter1 + 1
+            else:
+                battle.voter2 = battle.voter2 + 1
+
+        except:
+            if(winid = char1num):       
+                new_battle = Battle(char1id = char1num, char2id = char2num,votes1=1,votes2=0)
+            else:
+                new_battle = Battle(char1id = char1num, char2id = char2num,votes1=0,votes2=1)
+            db.session.add()
+            db.session.commit()
+        return{
+            'votes1': new_battle.votes1,
+            'votes2': new_battle.votes2
+            }
     
 
 #character table
