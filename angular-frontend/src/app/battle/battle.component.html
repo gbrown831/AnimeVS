@@ -1,14 +1,14 @@
 <div id="battle-container">
     <div id="character-container">
         <div>
-            <a (click)="postVotes(left_char.id)"><img id="left-image" [src]="leftURL" [@fadeImage]="fadeLeft ? 'hasLost' : 'hasWon'"></a>
+            <a (click)="postVotes(left_char.id)"><img id="left-image" [src]="leftURL"></a>
             <div class="character">
                 <h2>{{left_char.name}}</h2>
                 <h4>{{left_char.show}}</h4>
             </div>
         </div>
         <div>
-            <a (click)="postVotes(right_char.id)"><img id="right-image" [src]="rightURL" [@fadeRight]="fadeRight ? 'hasLost' : 'hasLost'"></a>
+            <a (click)="postVotes(right_char.id)"><img id="right-image" [src]="rightURL"></a>
             <div class="character">
                 <h2>{{right_char.name}}</h2>
                 <h4>{{right_char.show}}</h4>
@@ -16,17 +16,6 @@
         </div>
     </div>
     
-    <!-- <div id="character-descriptions">
-        <div class="character">
-            <h2>{{left_char.name}}</h2>
-            <h4>{{left_char.show}}</h4>
-        </div>
-        <div class="character">
-            <h2>{{right_char.name}}</h2>
-            <h4>{{right_char.show}}</h4>
-        </div>
-    </div> -->
-
     <div #collapse="ngbCollapse" [(ngbCollapse)]="!hasVoted">
         <div id="votes">
             <div id="number-left">{{leftVotes}}</div>

@@ -1,12 +1,9 @@
 from flask import Flask, request
-from flask_restful import Resource, Api
-from flask import Flask, request
 from flask_restful import Resource, Api, reqparse
 import requests
 from bs4 import BeautifulSoup
 import sys
 from flask_cors import CORS
-from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
@@ -14,7 +11,7 @@ import random
 from sqlalchemy_serializer import SerializerMixin
 
 
-
+#------------------------------------------------------------- App Configuration -----------------------------------------------------------#
 app = Flask(__name__)
 CORS(app)
 api = Api(app)
@@ -26,7 +23,8 @@ db = SQLAlchemy(app)
 # app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///project.db"
 animeCharacters = pd.read_csv('./AnimeCharacters.csv')
 app.app_context()
-# configure the SQLite database, relative to the app instance f
+
+# ------------------------------------------------------------ Flask Models ----------------------------------------------------------------#
 
 #character table
 class Character(db.Model, SerializerMixin):
@@ -45,7 +43,15 @@ class Battle(db.Model, SerializerMixin):
     votes1 = db.Column(db.Integer, primary_key=True)
     votes2 = db.Column(db.Integer, primary_key=True)
 
+
+#-------------------------------------------------------- Intermediate Functions----------------------------------------------------------#
+
 def getURLNaruto(url): #Works only for Naruto
+    """
+    Web scraping function specifically for Naruto Characters
+    using the following source: https://naruto.fandom.com/wiki/Narutopedia
+    @parem url The url of the specific random Naruto character selected
+    """
 
     url_list = []
     response = requests.get(url)
@@ -70,7 +76,16 @@ def getURLNaruto(url): #Works only for Naruto
 
     return url_list
 
-def getURL(name, url): #Works for DragonBall, JJK, and OnePiece
+def getURL(url): #Works for DragonBall, JJK, and OnePiece
+    """
+    Web scraping function for One Punch Man, JJK, and One Piece,
+    using the following respective sources:
+    https://onepunchman.fandom.com/wiki/One-Punch_Man_Wiki
+    https://jujutsu-kaisen.fandom.com/wiki/Jujutsu_Kaisen_Wiki
+    https://onepiece.fandom.com/wiki/One_Piece_Wiki
+
+    @param url The url for the random anime character selected
+    """
 
     url_list = []
 
@@ -95,11 +110,19 @@ def getURL(name, url): #Works for DragonBall, JJK, and OnePiece
     
     return url_list
 
+
+#------------------------------------------------------------ Middleware -------------------------------------------------------------------#
+
 class Images(Resource):
     def get(self):
+        """
+        Retrieves the information for two random characters from the database
+        """
+
         #generates new random IDs
         characters = db.session.execute(db.select(Character))
         num_characters = len(characters.all())
+
         #generate two random numbers from 0 to num_characters
         #char1 = query where character ID is random number 1
         #char2 = query where character ID is random number 2
@@ -111,15 +134,17 @@ class Images(Resource):
         char1 = Character.query.get(rand1)
         char2 = Character.query.get(rand2)
         
+        # Decide whether to use the Naruto or the
+        # Default web scrapper
         if char1.show == "Naruto":
             char1_url = getURLNaruto(char1.url)
         else:
-            char1_url = getURL(char1.show, char1.url)
+            char1_url = getURL(char1.url)
         
         if char2.show == "Naruto":
             char2_url = getURLNaruto(char2.url)
         else:
-            char2_url = getURL(char2.show, char2.url)
+            char2_url = getURL(char2.url)
 
         return {
             'test': len(characters.all()),
@@ -130,25 +155,31 @@ class Images(Resource):
         }
     
     def post(self):
-        #if char2id < char1id, char1id is char2id and char2id is char1id
-        #for query for battle in database with the characters
-        #if it is not there, make a battle and set the winners vote count to one
-        #if it is there, increment the winners vote count
-        #return voter counts
+        """
+        Saves the users vote from the angular frontend into the database
+        """
+
+        # Processing the user's information from the frontend
         data = request.json
         char1num = data['char1_id']
         char2num = data['char2_id']
         winid = data['winner']
         switches = False
         
+        # For a battle, the ID of the first character must be strictly less
+        # than the ID of the second character for uniqueness of rooms.  Swap
+        # the order of ID's if necessary
         if char2num < char1num:
             foo = char2num
             char2num = char1num
             char1num = foo
             switches = True
+
+        # If a battle between the two characters already exists, increment the
+        # votes for the winner.  Otherwise, create a new battle object between
+        # the two characters
         try:
             battle = Battle.query.filter_by(char1_id = char1num, char2_id = char2num).first()
-            print('test', winid)
             if winid == char1num:
                 battle.votes1 = battle.votes1 + 1
             else:
@@ -159,13 +190,14 @@ class Images(Resource):
                 'switch': switches          
             }
 
-
         except:
             battles = db.session.execute(db.select(Battle))
             if winid == char1num:       
-                new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=1,votes2=0)
+                # new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=1,votes2=0)
+                new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=random.randint(1, 10),votes2=random.randint(0, 10))
             else:
-                new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=0,votes2=1)
+                # new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=0,votes2=1)
+                new_battle = Battle(id=len(battles.all()), char1_id = char1num, char2_id = char2num, votes1=random.randint(0, 10),votes2=random.randint(1, 10))
             
             db.session.add(new_battle)
 
@@ -176,24 +208,19 @@ class Images(Resource):
             }
         
         db.session.commit()
-
         return context
     
 api.add_resource(Images, '/')
 
 
-# with app.test_request_context():
-#      db.create_all()
-
 if __name__ == '__main__':
     app.run(debug=True)
-    # app.app_context()
-    # Session = sessionmaker(bind=engine)
-    # session = Session()
 
+    ## Used to create the database
     # with app.test_request_context():
     #  db.create_all()
 
+    ## Used to initiate values in the characters table
     # with app.app_context():
     #     for index, row in animeCharacters.iterrows():
     #         new_char = Character(name = row['name'], show = row['show'], url = row['url'])

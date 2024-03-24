@@ -34,39 +34,64 @@ import {
 })
 
 export class BattleComponent {
+  /**
+   * Changes the view from the battle screen to the home screen
+   */
   @Output() setView = new EventEmitter<boolean>();
+
+  /**
+   * The image URLs of the left and right characters
+   */
   leftURL!: string;
   rightURL!: string;
+
+  /**
+   * The character information stored in database for both characters
+   */
   left_char: any = {};
   right_char: any = {};
+
+  /**
+   * 
+   */
   leftVotes!: string | number;
   rightVotes!: string | number;
 
+  /**
+   * Shows if the user has voted for a character on the screen
+   */
   hasVoted: boolean = false;
+
 
   left_percentage!: string;
   right_percentage!: string;
 
-  fadeLeft = this.hasVoted && (this.leftVotes < this.rightVotes);
-  fadeRight = this.hasVoted && (this.leftVotes > this.rightVotes);
-
-
+/**
+ * Triggers the app to change the view of the screen
+ * @param isHome boolean to decide whether to return to the home screen
+ */
   changeView(isHome: boolean) {
     this.setView.emit(isHome);
   }
 
+  // Request for two random characters for users to choose from 
+  // When the screen first renders
   ngOnInit() {
     this.getImages();
   }
 
+  /**
+   * Retrieves information of two random characters stored
+   * in the Flask database
+   */
   getImages() {
     axios.get('http://127.0.0.1:5000/')
     .then((res) => {
+      console.log(res.data)
       this.leftURL = res.data.char1_url[0]
       this.rightURL = res.data.char2_url[0]
       this.left_char = res.data.char1;
       this.right_char = res.data.char2;
-      console.log(res.data)
 
       this.hasVoted = false;
     })
@@ -74,6 +99,10 @@ export class BattleComponent {
   }
 
 
+  /**
+   * Saves a user choice of a battle in the Flask database
+   * @param id the character ID of the user selected (hidden from the user)
+   */
   postVotes(id: string | number) {
 
     this.hasVoted = true;
@@ -83,6 +112,14 @@ export class BattleComponent {
       "winner": id
     })
     .then((res) => {
+
+      /**
+       * The id of the first character in the database must be
+       * less than the id of the second character in the database.
+       * So, this tracks whether the order of ID's were swapped
+       * within the backend response 
+       */
+
       if (res.data.switch) {
         this.leftVotes = (res.data.votes2 * 100) / (res.data.votes1 + res.data.votes2);
         this.rightVotes = (res.data.votes1 * 100) / (res.data.votes1 + res.data.votes2);
@@ -91,10 +128,7 @@ export class BattleComponent {
         this.rightVotes = (res.data.votes2 * 100) / (res.data.votes1 + res.data.votes2);
       }
 
-      this.fadeLeft = (this.leftVotes < this.rightVotes);
-      this.fadeRight = (this.leftVotes > this.rightVotes);
-      console.log(this.fadeLeft, this.fadeRight)
-
+      //Displaying the percentages of votes on screen
       this.left_percentage = Math.floor((this.leftVotes / 100) * 80).toString() + 'vw';
       this.right_percentage = Math.floor((this.rightVotes / 100) * 80).toString() + 'vw';
 
@@ -103,6 +137,7 @@ export class BattleComponent {
     })
     .catch((err) => console.log(err));
 
+    // Used for smooth transitioning
     setTimeout(() => {
       this.getImages();
     }, 3000);
