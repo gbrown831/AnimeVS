@@ -90,7 +90,7 @@ export class BattleComponent {
    * in the Flask database
    */
   getImages() {
-    axios.get('http://127.0.0.1:5000/')
+    axios.get('https://anime-versus-a63b2afeb899.herokuapp.com/')
     .then((res) => {
       console.log(res.data)
       this.leftURL = res.data.char1_url[0]
@@ -119,7 +119,7 @@ export class BattleComponent {
   postVotes(id: string | number) {
 
     this.hasVoted = true;
-    axios.post('http://127.0.0.1:5000/', {
+    axios.post('https://anime-versus-a63b2afeb899.herokuapp.com/', {
       "char1_id": this.left_char.id,
       "char2_id": this.right_char.id,
       "winner": id
