@@ -19,7 +19,7 @@ this is a percentile that is telling you which side is winning
   - Flask
   - HTML
   - CSS
-  - PostgreSQL
+  - Heroku
 
 
 ## Names
