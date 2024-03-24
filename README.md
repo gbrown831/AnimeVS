@@ -19,13 +19,13 @@ this is a percentile that is telling you which side is winning
   - Flask
   - HTML
   - CSS
-  - PostgreSQL
+  - Heroku
 
 
 ## Names
 - Kwaku Ofosu-Tuffour
 - Gus Brown
-- Alan Gonzalez
+- Alan Gonzalez Osorio
 - Alexander Bendezu
 
 
